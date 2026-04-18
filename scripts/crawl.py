@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""Download the CUDA Programming Guide and in-scope linked files."""
+#!/usr/bin/env python
+"""Recursively download files under a docs prefix."""
 
 from __future__ import annotations
 
@@ -18,8 +18,6 @@ from requests import Response, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-DEFAULT_BASE_URL = "https://docs.nvidia.com/cuda/cuda-programming-guide/"
-DEFAULT_OUTPUT_DIR = "docs/cuda-programming-guide"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_WORKERS = 3
 DEFAULT_USER_AGENT = (
@@ -373,19 +371,19 @@ class Downloader:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Recursively download files linked from the CUDA Programming Guide. "
+            "Recursively download files linked under a docs prefix. "
             "For every HTML page, also try to fetch the matching .html.md file."
         )
     )
     parser.add_argument(
         "--base-url",
-        default=DEFAULT_BASE_URL,
-        help=f"Docs root to crawl. Default: {DEFAULT_BASE_URL}",
+        required=True,
+        help="Docs root to crawl.",
     )
     parser.add_argument(
         "--output-dir",
-        default=DEFAULT_OUTPUT_DIR,
-        help=f"Directory used to store downloaded files. Default: {DEFAULT_OUTPUT_DIR}",
+        required=True,
+        help="Directory used to store downloaded files.",
     )
     parser.add_argument(
         "--timeout",
