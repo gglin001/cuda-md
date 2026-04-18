@@ -18,7 +18,6 @@ from requests import Response, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-
 DEFAULT_BASE_URL = "https://docs.nvidia.com/cuda/cuda-programming-guide/"
 DEFAULT_OUTPUT_DIR = "docs/cuda-programming-guide"
 DEFAULT_TIMEOUT = 30.0
