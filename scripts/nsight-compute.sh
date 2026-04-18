@@ -8,4 +8,5 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 exec python "${SCRIPT_DIR}/crawl.py" \
   --base-url "https://docs.nvidia.com/nsight-compute/" \
   --output-dir "${REPO_ROOT}/docs/nsight-compute" \
+  --blacklist-regex '^\d+(?:\.\d+)+(?:/|$)' \
   "$@"

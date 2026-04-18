@@ -54,6 +54,7 @@ class Downloader:
         overwrite: bool,
         user_agent: str,
         max_files: int | None,
+        blacklist_regexes: list[re.Pattern[str]],
     ) -> None:
         self.base_url = self.normalize_base_url(base_url)
         split = urlsplit(self.base_url)
@@ -66,11 +67,14 @@ class Downloader:
         self.overwrite = overwrite
         self.user_agent = user_agent
         self.max_files = max_files
+        self.blacklist_regexes = blacklist_regexes
         self.pending: Queue[str | None] = Queue()
         self.seen: set[str] = set()
+        self.denied_urls: set[str] = set()
         self.failed: list[tuple[str, str]] = []
         self.downloaded = 0
         self.skipped = 0
+        self.denied = 0
         self.missing = 0
         self.limit_reached = False
         self.seen_lock = Lock()
@@ -125,10 +129,20 @@ class Downloader:
         canonical = self.canonicalize(raw_url, current_url=current_url)
         if canonical is None:
             return
+        denied_pattern: re.Pattern[str] | None = None
         with self.seen_lock:
-            if canonical in self.seen:
+            if canonical in self.seen or canonical in self.denied_urls:
                 return
-            self.seen.add(canonical)
+            denied_pattern = self.blacklist_match_for(canonical)
+            if denied_pattern is not None:
+                self.denied_urls.add(canonical)
+            else:
+                self.seen.add(canonical)
+        if denied_pattern is not None:
+            with self.stats_lock:
+                self.denied += 1
+            self.log(f"DENY  {canonical} -> {denied_pattern.pattern}")
+            return
         self.pending.put(canonical)
 
     def log(self, message: str, *, stream: object | None = None) -> None:
@@ -145,6 +159,13 @@ class Downloader:
         if not relative_path:
             relative_path = "index.html"
         return Path(relative_path)
+
+    def blacklist_match_for(self, url: str) -> re.Pattern[str] | None:
+        relative_path = self.relative_path_for(url).as_posix()
+        for pattern in self.blacklist_regexes:
+            if pattern.search(relative_path) or pattern.search(url):
+                return pattern
+        return None
 
     def save(self, url: str, content: bytes) -> Path:
         target = self.output_dir / self.relative_path_for(url)
@@ -363,9 +384,19 @@ class Downloader:
 
         self.log(
             f"Done. downloaded={self.downloaded} skipped={self.skipped} "
-            f"missing={self.missing} failed={len(self.failed)} queued={len(self.seen)}"
+            f"denied={self.denied} missing={self.missing} "
+            f"failed={len(self.failed)} queued={len(self.seen)}"
         )
         return 0 if not self.failed else 1
+
+
+def parse_regex(pattern: str) -> re.Pattern[str]:
+    try:
+        return re.compile(pattern)
+    except re.error as exc:
+        raise argparse.ArgumentTypeError(
+            f"invalid regex {pattern!r}: {exc}"
+        ) from exc
 
 
 def parse_args() -> argparse.Namespace:
@@ -413,6 +444,17 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Stop after saving this many files. Useful for smoke tests.",
     )
+    parser.add_argument(
+        "--blacklist-regex",
+        action="append",
+        default=[],
+        type=parse_regex,
+        metavar="PATTERN",
+        help=(
+            "Skip URLs whose canonical URL or relative path matches this regex. "
+            "May be passed multiple times."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -426,6 +468,7 @@ def main() -> int:
         overwrite=args.overwrite,
         user_agent=args.user_agent,
         max_files=args.max_files,
+        blacklist_regexes=args.blacklist_regex,
     )
     return downloader.crawl()
 
