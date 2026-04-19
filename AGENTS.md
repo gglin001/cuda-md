@@ -17,10 +17,14 @@ This repository mirrors NVIDIA CUDA documentation into local Markdown and HTML s
 
 ## Workspace Hygiene and `.gitignore` Policy
 
-The repository uses a narrow `.gitignore` strategy (targeted ignores), not a global deny-all pattern like `*` + whitelist.
-
-- Do not switch to a deny-all ignore pattern unless explicitly requested.
-- Assume `.gitignore` controls Git tracking only; it does not define what agents may read.
-- For content lookup in `docs/`, prefer `rg -u` so ignored files are not skipped by default search behavior.
+- Keep `.gitignore` narrow and targeted; do not switch to a deny-all whitelist pattern unless explicitly requested.
+- `.gitignore` only affects Git tracking, so agents may still read ignored files, including relevant content under `docs/` and safe symlinked contents.
+- When searching under `docs/`, prefer `rg -u`. Use `rg -uL` when symlinks may contain relevant files.
 - Do not skip `docs/` subfolders such as `_images/`, `_static/`, `generated/`, or `latest/` when they are relevant to link resolution or context tracing.
-- Prefer putting disposable outputs in `debug_agent/` instead of expanding broad ignore rules.
+- Put disposable scripts and outputs in `debug_agent/` instead of broadening ignore rules.
+
+## Agent Scratch Workflow
+
+- For debugging, repro, validation, or inspection, prefer saving helper scripts, fixtures, and outputs under `debug_agent/` and running them from there.
+- Use descriptive names such as `debug_agent/repro_matmul_stride.py`, and keep useful scratch artifacts during the task so the workflow stays visible and reproducible.
+- `python - <<'PY'` is a discouraged style example; reserve inline heredocs or one-liners for truly tiny throwaway commands, and otherwise default to saved files in `debug_agent/`.

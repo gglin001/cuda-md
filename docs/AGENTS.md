@@ -25,7 +25,7 @@ The categories below are a practical starting map, not an exhaustive list. If a 
 
 1. Classify the task, for example API usage, correctness, compile failure, or performance tuning.
 2. Pick one anchor directory and 1-2 related directories.
-3. Search via `rg -u`, then read `index.html.md` and linked chapter files.
+3. Search via `rg -u`. Use `rg -uL` when symlinked docs may be relevant.
 4. Check `cuda-toolkit-release-notes/` for version-sensitive behavior.
 5. Return guidance with concrete evidence paths.
 
@@ -33,14 +33,15 @@ The categories below are a practical starting map, not an exhaustive list. If a 
 # CWD is docs
 rg -n -u "stream|event|synchron" cuda-runtime-api
 rg -n -u "occupancy|warp|shared memory" cuda-c-best-practices-guide *-tuning-guide
-rg -n -u "ptx|sm_[0-9]+" parallel-thread-execution nvvm-ir-spec
+rg -n -uL "ptx|sm_[0-9]+" parallel-thread-execution nvvm-ir-spec
 ```
 
 ## Workspace Hygiene and `.gitignore` Policy
 
 Use `.gitignore` as a Git tracking rule, not as a content relevance rule.
 
-- Always use `rg -u` for docs searches, so ignored files are not silently skipped.
+- Use `rg -u` for docs searches, so ignored files are not silently skipped.
+- Use `rg -uL` when relevant docs may be reached through symlinks.
 - Do not skip folders such as `_images/`, `_static/`, `generated/`, or `latest/` when tracing links, symbols, or anchor behavior.
 - Narrow search scope with explicit paths and patterns, instead of dropping `-u`.
 
