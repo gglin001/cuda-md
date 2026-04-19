@@ -2,40 +2,51 @@
 
 ## Goal
 
-Use local `docs/` as the primary source when understanding CUDA behavior and assisting development tasks. Prefer grounded answers from local files over memory.
+Use this docs tree as a local CUDA knowledge base for kernel and runtime development. Prefer evidence from local files over memory.
 
 ## What To Read First
 
-- Prefer `*.html.md` files, because they are text-friendly and searchable.
-- Use sibling `.html` files only when structure or embedded links matter.
-- Treat `Title`, `URL Source`, and `Published Time` as metadata. Focus on `Markdown Content` for technical details.
+- Prefer `*.html.md`, because they are text-friendly and fast to grep.
+- Use sibling `.html` only when DOM structure or embedded navigation matters.
+- Treat `Title`, `URL Source`, and `Published Time` as metadata, and use `Markdown Content` for technical claims.
 
 ## Directory Map By Intent
 
-- Core CUDA model: `docs/cuda-programming-guide/`
-- API details: `docs/cuda-runtime-api/`, `docs/cuda-driver-api/`, `docs/cuda-math-api/`
-- Performance: `docs/cuda-c-best-practices-guide/`, `docs/*-tuning-guide/`
-- Architecture compatibility: `docs/*-compatibility-guide/`, `docs/cuda-compatibility/`
-- Compiler and IR: `docs/cuda-compiler-driver-nvcc/`, `docs/parallel-thread-execution/`, `docs/ptx-compiler-api/`, `docs/nvvm-ir-spec/`, `docs/libnvvm-api/`
-- Tooling and profiling: `docs/nsight-compute/`, `docs/nsight-systems/`, `docs/cupti/`, `docs/debugger-api/`
+The categories below are a practical starting map, not an exhaustive list. If a topic is missing here, continue searching in other folders under `docs/`.
+
+- Core model: `cuda-programming-guide/`
+- API behavior: `cuda-runtime-api/`, `cuda-driver-api/`, `cuda-math-api/`
+- Performance: `cuda-c-best-practices-guide/`, `*-tuning-guide/`
+- Compatibility: `*-compatibility-guide/`, `cuda-compatibility/`
+- Compiler and IR: `cuda-compiler-driver-nvcc/`, `parallel-thread-execution/`, `ptx-compiler-api/`, `nvvm-ir-spec/`
+- Tooling: `nsight-compute/`, `nsight-systems/`, `cupti/`, `debugger-api/`
 
 ## Recommended Workflow
 
-1. Classify the request, for example correctness, API usage, compile issue, or performance tuning.
-2. Pick one anchor doc directory, then expand to 1-2 related directories.
-3. Search with `rg` and read the most relevant `index.html.md` plus linked chapter files.
-4. Cross-check version-sensitive claims in `docs/cuda-toolkit-release-notes/`.
-5. Return actionable guidance with file-path evidence.
+1. Classify the task, for example API usage, correctness, compile failure, or performance tuning.
+2. Pick one anchor directory and 1-2 related directories.
+3. Search via `rg -u`, then read `index.html.md` and linked chapter files.
+4. Check `cuda-toolkit-release-notes/` for version-sensitive behavior.
+5. Return guidance with concrete evidence paths.
 
 ```bash
-rg -n "stream|event|synchron" docs/cuda-runtime-api
-rg -n "occupancy|warp|shared memory" docs/cuda-c-best-practices-guide docs/*-tuning-guide
-rg -n "ptx|sm_[0-9]+" docs/parallel-thread-execution docs/nvvm-ir-spec
+# CWD is docs
+rg -n -u "stream|event|synchron" cuda-runtime-api
+rg -n -u "occupancy|warp|shared memory" cuda-c-best-practices-guide *-tuning-guide
+rg -n -u "ptx|sm_[0-9]+" parallel-thread-execution nvvm-ir-spec
 ```
+
+## Workspace Hygiene and `.gitignore` Policy
+
+Use `.gitignore` as a Git tracking rule, not as a content relevance rule.
+
+- Always use `rg -u` for docs searches, so ignored files are not silently skipped.
+- Do not skip folders such as `_images/`, `_static/`, `generated/`, or `latest/` when tracing links, symbols, or anchor behavior.
+- Narrow search scope with explicit paths and patterns, instead of dropping `-u`.
 
 ## Output Rules For Agents
 
-- Cite concrete local paths in every non-trivial answer, for example `docs/cuda-runtime-api/index.html.md`.
+- Quote evidence with concrete relative paths, for example `cuda-runtime-api/index.html.md`.
 - Separate confirmed facts from inference.
-- If docs do not contain the needed detail, say so clearly and suggest the next best doc path to inspect.
-- For code help, end with practical steps, for example API choice, kernel changes, compiler flags, and validation checks.
+- If evidence is missing, state that clearly, then suggest the next doc path to inspect.
+- For code advice, end with concrete implementation and validation steps.
