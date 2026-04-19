@@ -41,11 +41,9 @@ args=(
   # cufft.sh
   # curand.sh
   # cufile-api-reference-guide.sh
-  # cub.sh
   # cusolver.sh
   # cusparse.sh
   cuda-driver-api.sh
-  # cuda-cpp-standard-library.sh
   cuda-math-api.sh
   cuda-runtime-api.sh
   # npp.sh
@@ -54,6 +52,10 @@ args=(
   nvjitlink.sh
   # nvjpeg.sh
   nvrtc.sh
+  # cccl contains `cub`, `thrust`, `libcudacxx`, and others
+  cccl.sh
+  # cub.sh
+  # cuda-cpp-standard-library.sh
   # thrust.sh
 
   # PTX Compiler API References
